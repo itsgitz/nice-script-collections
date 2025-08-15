@@ -2,23 +2,19 @@ import axios from "axios";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function sendSameRequestMultipleTimes(
-  endpoint: string,
-  count: number,
-  delayMs: number
-) {
-  for (let i = 0; i < count; i++) {
+async function sendRequestsInfinitely(endpoint: string, delayMs: number) {
+  let i = 0;
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    i++;
     try {
       const res = await axios.get(endpoint);
-      console.log(`Response #${i + 1}:`, res.data);
+      console.log(`Response #${i}:`, res.data);
     } catch (err) {
-      console.error(`Request #${i + 1} failed:`, err.message);
+      console.error(`Request #${i} failed:`, err.message);
     }
 
-    // Wait for the specified delay before the next request, but not after the last one.
-    if (i < count - 1) {
-      await delay(delayMs);
-    }
+    await delay(delayMs);
   }
 }
 
@@ -30,7 +26,6 @@ const text = "Tobat bos jangan nipu mulu!";
 
 // Example usage
 const endpoint = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${grup}&text=${text}&parse_mode=html`;
-const times = 1_000_000;
-const concurrency = 500; // send 500 at the same time
+const delayBetweenRequestsMs = 500;
 
-sendSameRequestMultipleTimes(endpoint, times, concurrency);
+sendRequestsInfinitely(endpoint, delayBetweenRequestsMs);
