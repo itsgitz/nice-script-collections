@@ -54,8 +54,8 @@ const text = "Tobat bos jangan nipu mulu!";
 
 // Example usage
 const endpoint = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${grup}&text=${text}&parse_mode=html`;
-const requestsPerBatch = 500;
-const delayAfterBatchMs = 500;
+const requestsPerBatch = 50;
+const delayAfterBatchMs = 1000;
 const concurrency = 50; // Limit concurrent requests to avoid overwhelming the API
 
 sendRequestsInBatches(
