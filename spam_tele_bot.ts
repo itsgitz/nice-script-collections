@@ -1,20 +1,48 @@
 import axios from "axios";
+import pLimit from "p-limit";
 
 const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function sendRequestsInfinitely(endpoint: string, delayMs: number) {
-  let i = 0;
+async function sendRequestsInBatches(
+  endpoint: string,
+  batchSize: number,
+  concurrency: number,
+  delayAfterBatchMs: number
+) {
+  const limit = pLimit(concurrency);
+  let totalRequestsSent = 0;
+
   // eslint-disable-next-line no-constant-condition
   while (true) {
-    i++;
-    try {
-      const res = await axios.get(endpoint);
-      console.log(`Response #${i}:`, res.data);
-    } catch (err) {
-      console.error(`Request #${i} failed:`, err.message);
-    }
+    console.log(
+      `--- Starting batch of ${batchSize} requests (concurrency: ${concurrency}) ---`
+    );
 
-    await delay(delayMs);
+    const tasks = Array.from({ length: batchSize }, () =>
+      limit(async () => {
+        const requestNumber = ++totalRequestsSent;
+        try {
+          const res = await axios.get(endpoint);
+          console.log(`Response #${requestNumber}:`, res.data);
+        } catch (err) {
+          if (axios.isAxiosError(err)) {
+            console.error(
+              `Request #${requestNumber} failed: ${err.message}`,
+              err.response?.data
+            );
+          } else {
+            console.error(`Request #${requestNumber} failed:`, err.message);
+          }
+        }
+      })
+    );
+
+    await Promise.all(tasks);
+
+    console.log(
+      `--- Finished batch. Total requests sent: ${totalRequestsSent}. Pausing for ${delayAfterBatchMs}ms ---`
+    );
+    await delay(delayAfterBatchMs);
   }
 }
 
@@ -26,6 +54,13 @@ const text = "Tobat bos jangan nipu mulu!";
 
 // Example usage
 const endpoint = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${grup}&text=${text}&parse_mode=html`;
-const delayBetweenRequestsMs = 500;
+const requestsPerBatch = 500;
+const delayAfterBatchMs = 500;
+const concurrency = 50; // Limit concurrent requests to avoid overwhelming the API
 
-sendRequestsInfinitely(endpoint, delayBetweenRequestsMs);
+sendRequestsInBatches(
+  endpoint,
+  requestsPerBatch,
+  concurrency,
+  delayAfterBatchMs
+);
