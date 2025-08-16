@@ -50,12 +50,12 @@ async function sendRequestsInBatches(
 
 const token = "8054857711:AAE7GaU8Sf6A5tAsUT4QtlLdgMEf5yYOBns"; // Ganti dengan token bot yang kamu buat
 const grup = "6942633617"; // Ganti dengan chat id dari bot yang kamu buat
-const text = "Tobat bos jangan nipu mulu!";
+const text = "Tobat bos jangan nipu mulu, gantiin SPinjam gw!";
 
 // Example usage
 const endpoint = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${grup}&text=${text}&parse_mode=html`;
 const requestsPerBatch = 50;
-const delayAfterBatchMs = 3000;
+const delayAfterBatchMs = 5000;
 const concurrency = 50; // Limit concurrent requests to avoid overwhelming the API
 
 sendRequestsInBatches(
